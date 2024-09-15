@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./style.css";
+import { Modal } from "./Modal";
+import { Button } from "./Button";
+import Image from "./assets/pen.png";
 
 const RightSideMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selection, setSelection] = useState("");
   const [cord, setCord] = useState({ top: 0, left: 0 });
   const { top, left } = cord;
 
   const handleCloseModal = () => {
-    setIsOpen(!isOpen);
+    setIsOpen(false);
+    setIsModalOpen(false);
   };
 
   useEffect(() => {
@@ -16,6 +22,16 @@ const RightSideMenu = () => {
       console.log(event);
       const left = event.clientX;
       const top = event.clientY;
+      const selection = window.getSelection()?.toString().trim();
+      console.log({ selection });
+
+      if (!selection) {
+        setIsOpen(false);
+        setIsModalOpen(false);
+        setSelection("");
+        return;
+      }
+      setSelection(selection);
       setIsOpen(true);
       setCord({ top, left });
     }
@@ -27,20 +43,20 @@ const RightSideMenu = () => {
   }, []);
 
   return (
-    <div className={`fixed`} style={{ top, left }}>
-      {/* Button to toggle the menu */}
-      {/* Right side menu */}
-      <div className="w-screen max-w-md flex-auto overflow-hidden rounded-3xl bg-white text-sm leading-6 shadow-lg ring-1 ring-gray-900/5">
-        {/* Content of the menu */}
-        <div className="p-4">
-          <h2 className="text-lg font-semibold">Right Side Menu</h2>
-          <p className="mt-2 text-sm">
-            This is a content area inside the right-side menu. Add your custom
-            content here.
-          </p>
-          <button onClick={handleCloseModal}>Close</button>
-        </div>
-      </div>
+    <div className="fixed" style={{ top, left }}>
+      {isOpen && (
+        <Button
+          onClick={() => {
+            setIsModalOpen(true);
+            setIsOpen(false);
+          }}
+        >
+          <img src={chrome.runtime.getURL("./assets/pen.png")}>Open Modal</img>
+        </Button>
+      )}
+      {isModalOpen && selection && (
+        <Modal onCloseModal={handleCloseModal}>{selection}</Modal>
+      )}
     </div>
   );
 };
