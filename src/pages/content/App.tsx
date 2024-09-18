@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Drawer from "./Drawer";
 import Card from "./Card";
+import { WavyBackground } from "@src/components/ui/wavy-background";
 
 type ExplenationList = {
   original: string;
@@ -15,6 +16,7 @@ export type ImprovedTextResposne = {
 
 const App = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [improvedText, setImprovedText] = useState<ImprovedTextResposne | null>(
     null
   );
@@ -28,7 +30,7 @@ const App = () => {
       );
       console.log({ parsedData });
       setImprovedText(parsedData);
-      setIsOpen(true);
+      setIsLoading(false);
     };
     chrome.runtime.onMessage.addListener(messageListener);
     return () => {
@@ -40,6 +42,7 @@ const App = () => {
     const openListener = (message: { action: string }) => {
       if (message.action !== "openDrawer") return;
       setIsOpen(true);
+      setIsLoading(true);
     };
     chrome.runtime.onMessage.addListener(openListener);
     return () => {
@@ -49,6 +52,14 @@ const App = () => {
 
   return (
     <Drawer isOpen={isOpen} onClose={() => setIsOpen(false)}>
+      {isLoading && (
+        // make it round circle like loader shape in talwindcss
+        <WavyBackground containerClassName="w-50 h-50 rounded-full flex items-center justify-center">
+          <div className="flex items-center justify-center h-full">
+            Generating improved text...
+          </div>
+        </WavyBackground>
+      )}
       {improvedText && <Card data={improvedText} />}
     </Drawer>
   );
