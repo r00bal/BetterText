@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Drawer from "./Drawer";
 import Card from "./Card";
-import { WavyBackground } from "@src/components/ui/wavy-background";
+import { SparklesCore } from "@src/components/ui/sparkles";
 
 type ExplenationList = {
   original: string;
@@ -52,14 +52,24 @@ const App = () => {
 
   return (
     <Drawer isOpen={isOpen} onClose={() => setIsOpen(false)}>
-      {isLoading && (
-        // make it round circle like loader shape in talwindcss
-        <WavyBackground containerClassName="w-50 h-50 rounded-full flex items-center justify-center">
-          <div className="flex items-center justify-center h-full">
-            Generating improved text...
-          </div>
-        </WavyBackground>
-      )}
+      <textarea
+        className="border-0 border-slate-400"
+        value="Lotem sdfsfsfc sfdsdfcsdcs fsdfc"
+      />
+
+      <div className="w-full relative inset-0 border border-solid border-slate-300 rounded-md min-h-52">
+        {isLoading && (
+          <SparklesCore
+            id="tsparticlesfullpage"
+            background="transparent"
+            minSize={0.6}
+            maxSize={1.4}
+            particleDensity={1000}
+            className="w-full h-full"
+            particleColor="#000"
+          />
+        )}
+      </div>
       {improvedText && <Card data={improvedText} />}
     </Drawer>
   );
