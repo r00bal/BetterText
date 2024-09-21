@@ -17,6 +17,7 @@ export type ImprovedTextResposne = {
 const App = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedText, setSelectedText] = useState<string | null>(null);
   const [improvedText, setImprovedText] = useState<ImprovedTextResposne | null>(
     null
   );
@@ -50,27 +51,74 @@ const App = () => {
     };
   }, []);
 
-  return (
-    <Drawer isOpen={isOpen} onClose={() => setIsOpen(false)}>
-      <textarea
-        className="border-0 border-slate-400"
-        value="Lotem sdfsfsfc sfdsdfcsdcs fsdfc"
-      />
+  useEffect(() => {
+    const onSelectionChange = () => {
+      const selectedText = window.getSelection()?.toString();
+      if (!selectedText) return;
+      setSelectedText(selectedText);
+    };
 
-      <div className="w-full relative inset-0 border border-solid border-slate-300 rounded-md min-h-52">
-        {isLoading && (
-          <SparklesCore
-            id="tsparticlesfullpage"
-            background="transparent"
-            minSize={0.6}
-            maxSize={1.4}
-            particleDensity={1000}
-            className="w-full h-full"
-            particleColor="#000"
+    document.addEventListener("selectionchange", onSelectionChange);
+    return () => {
+      document.removeEventListener("selectionchange", onSelectionChange);
+    };
+  }, []);
+
+  return (
+    <Drawer
+      className="w-1/3 min-w-[400px]"
+      isOpen={isOpen}
+      onClose={() => {
+        setIsOpen(false);
+        setSelectedText(null);
+      }}
+    >
+      {selectedText && (
+        <>
+          <h2 className="text-slate-900 w-full rounded-md text-xs font-bold mb-2">
+            Oryginal :
+          </h2>
+          <textarea
+            className="text-gray-500 w-full h-auto max-h-[300px] overflow-y-auto rounded-md text-xs mb-4 font-light bg-zinc-50 p-2 border border-zinc-300 border-solid"
+            style={{ minHeight: "100px", maxHeight: "300px" }}
+            value={selectedText}
           />
+        </>
+      )}
+
+      <div className="container">
+        {isLoading && (
+          <>
+            <h2 className="text-slate-900 w-full rounded-md text-xs font-light mb-4">
+              Working on it...
+            </h2>
+            <div className="w-full h-full max-h-[300px] flex flex-col items-center justify-center overflow-hidden rounded-md">
+              <div className="w-full h-full relative">
+                <div className="absolute inset-x-20 top-0 left-0 right-0 m-auto bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-3/4 blur-sm"></div>
+                <div className="absolute inset-x-20 top-0 left-0 right-0 m-auto bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px w-3/4"></div>
+                <div className="absolute inset-x-60 top-0 left-0 right-0 m-auto bg-gradient-to-r from-transparent via-sky-500 to-transparent h-[5px] w-1/4 blur-sm"></div>
+                <div className="absolute inset-x-60 top-0 left-0 right-0 m-auto bg-gradient-to-r from-transparent via-sky-500 to-transparent h-px w-1/4"></div>
+                <div
+                  className="opacity-0 w-full h-[400px]"
+                  style={{ opacity: 1 }}
+                >
+                  <SparklesCore
+                    id="tsparticlesfullpage"
+                    background="transparent"
+                    minSize={0.6}
+                    maxSize={1.4}
+                    particleDensity={1000}
+                    className="w-full h-full"
+                    particleColor="#000"
+                  />
+                </div>
+                <div className="absolute inset-0 w-full h-[400px] bg-white [mask-image:radial-gradient(100%_80%_at_top,transparent_20%,white)]"></div>
+              </div>
+            </div>
+          </>
         )}
+        {improvedText && <Card data={improvedText} />}
       </div>
-      {improvedText && <Card data={improvedText} />}
     </Drawer>
   );
 };
