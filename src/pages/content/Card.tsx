@@ -1,5 +1,6 @@
 import React from "react";
 import { ImprovedTextResposne } from "./App";
+import { TypewriterEffect } from "@src/components/ui/typewriter-effect";
 
 type CardProps = {
   data: ImprovedTextResposne;
@@ -11,12 +12,12 @@ const Card: React.FC<CardProps> = ({
   return (
     <div className="flex flex-col justify-start text-slate-900 w-full rounded-md text-xs font-light mb-2">
       <div className="mb-4">
-        <h2 className="mb-2 font-bold text-xs sm:text-base text-blue-500 dark:text-blue-500">
+        <h2 className="mb-2 font-bold text-xs text-blue-500 dark:text-blue-500">
           Improved text:
         </h2>
-        <p className="text-neutral-600 dark:text-neutral-200 text-xs sm:text-base  ">
-          {improved}
-        </p>
+        <TypewriterEffect
+          words={improved.split(" ").map((word: string) => ({ text: word }))}
+        />
       </div>
       <div>
         <h2 className="mb-2 font-bold">What and why was changed:</h2>

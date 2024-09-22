@@ -76,7 +76,7 @@ const App = () => {
       {selectedText && (
         <>
           <h2 className="text-slate-900 w-full rounded-md text-xs font-bold mb-2">
-            Oryginal :
+            Oryginal:
           </h2>
           <textarea
             className="text-gray-500 w-full h-auto max-h-[300px] overflow-y-auto rounded-md text-xs mb-4 font-light bg-zinc-50 p-2 border border-zinc-300 border-solid"
@@ -107,7 +107,7 @@ const App = () => {
                     background="transparent"
                     minSize={0.6}
                     maxSize={1.4}
-                    particleDensity={1000}
+                    particleDensity={300}
                     className="w-full h-full"
                     particleColor="#000"
                   />
