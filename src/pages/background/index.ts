@@ -1,4 +1,5 @@
 console.log("background script loaded");
+import dummyResponse from "./response.json";
 
 const generateCodeSuggestionFromOllama = async (prompt: string) => {
   const apiUrl = `http://localhost:11434/api/generate`;
@@ -54,6 +55,15 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+// wrtie a promise function that will retuen fake data fter 2 seconds
+const fakeData = () => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(dummyResponse);
+    }, 2000);
+  });
+};
+
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   console.log("contextMenus.onClicked", info, tab);
   if (info.menuItemId === "improveEnglish" && tab?.id) {
@@ -69,17 +79,18 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       const text = info.selectionText;
       if (!text) return;
       const prompt = createPrompt(text);
-      const response = await generateCodeSuggestionFromOllama(prompt);
-
+      // const response = await generateCodeSuggestionFromOllama(prompt);
+      const response = await fakeData();
       if (!response) {
         console.error("No response from AI model");
         return;
       }
-      const JSONresponse = JSON.parse(response);
+      // const JSONresponse = JSON.parse(response);
+      const JSONresponse = response;
       console.log("JSONresponse", JSONresponse);
       chrome.tabs.sendMessage(tab.id, {
         action: "improveEnglish",
-        data: response,
+        data: JSON.stringify(response),
       });
     });
   }

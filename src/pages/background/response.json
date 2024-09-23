@@ -1,0 +1,15 @@
+{
+  "improved": "Here's I like to cook, but prefer my home kitchen. I work as a programmer and want to start my own business. My dream is to write some app that will change the world and be useful for others.",
+  "explanation": [
+    {
+      "original": "Yres",
+      "correction": "Here's",
+      "explanation": "You started with 'Yres' which doesn't make sense in this context. 'Here's' is a better way to start the sentence because it shows you're going to tell us something."
+    },
+    {
+      "original": "programist",
+      "correction": "programmer",
+      "explanation": "There was a small spelling mistake - 'programist' should be spelled as 'programmer'."
+    }
+  ]
+}

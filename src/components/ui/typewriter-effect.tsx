@@ -7,7 +7,6 @@ import { useEffect } from "react";
 export const TypewriterEffect = ({
   words,
   className,
-  cursorClassName,
 }: {
   words: {
     text: string;
@@ -36,17 +35,21 @@ export const TypewriterEffect = ({
           width: "fit-content",
         },
         {
-          duration: 0.3,
-          delay: stagger(0.1),
+          duration: 0.001,
+          delay: stagger(0.01),
           ease: "easeInOut",
         }
       );
     }
   }, [isInView]);
-
+  // TODO add animated curosr to the end of the text
   const renderWords = () => {
     return (
-      <motion.div ref={scope} className="inline">
+      <motion.div
+        ref={scope}
+        className="inline"
+        onAnimationEnd={() => console.log("Animation finished!")}
+      >
         {wordsArray.map((word, idx) => {
           return (
             <div key={`word-${idx}`} className="inline-block">
@@ -66,6 +69,14 @@ export const TypewriterEffect = ({
             </div>
           );
         })}
+        <motion.span
+          className={cn("blinking-cursor")}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 1, 0] }}
+          transition={{ repeat: Infinity, duration: 0.8 }}
+        >
+          |
+        </motion.span>
       </motion.div>
     );
   };
