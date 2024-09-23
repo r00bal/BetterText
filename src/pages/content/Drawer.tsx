@@ -21,13 +21,13 @@ const Drawer: React.FC<DrawerProps> = ({
       animate={{ x: isOpen ? 0 : "100%" }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
-      <button
-        onClick={onClose}
-        className="mr-auto text-gray-500 hover:text-gray-700"
-      >
-        Close
-      </button>
       <div className="flex flex-col p-6 overflow-y-auto h-full relative z-[10000] justify-start">
+        <button
+          onClick={onClose}
+          className="mr-auto text-gray-500 hover:text-gray-700"
+        >
+          Close
+        </button>
         {children}
       </div>
     </motion.div>

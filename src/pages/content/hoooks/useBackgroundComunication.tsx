@@ -52,7 +52,6 @@ export const useBackgroundComunication = () => {
     const selectionListener = (message: { action: string; data?: string }) => {
       if (message.action !== "selectedText") return;
       setSelectedText(message?.data as string);
-      setIsLoading(true);
     };
 
     chrome.runtime.onMessage.addListener(selectionListener);

@@ -71,11 +71,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
     chrome.tabs.sendMessage(tab.id, {
       action: "openDrawer",
-      data: selection,
     });
 
     chrome.tabs.sendMessage(tab.id, {
       action: "selectedText",
+      data: selection,
     });
 
     chrome.storage.sync.get("aiModel", async (data) => {
