@@ -1,5 +1,5 @@
 console.log("background script loaded");
-import dummyResponse from "./response.json";
+// import dummyResponse from "./response.json";
 
 const generateCodeSuggestionFromOllama = async (prompt: string) => {
   const apiUrl = `http://localhost:11434/api/generate`;
