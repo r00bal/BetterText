@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Drawer from "./Drawer";
 import Card from "./Card";
-import { SparklesCore } from "@src/components/ui/sparkles";
+import { LoaderSparkles } from "./LoaderSparkles";
 
 type ExplenationList = {
   original: string;
@@ -17,7 +17,7 @@ export type ImprovedTextResposne = {
 const App = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedText, setSelectedText] = useState<string | null>(null);
+  const [selectedText, setSelectedText] = useState<string>("");
   const [improvedText, setImprovedText] = useState<ImprovedTextResposne | null>(
     null
   );
@@ -52,15 +52,15 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const onSelectionChange = () => {
-      const selectedText = window.getSelection()?.toString();
-      if (!selectedText) return;
-      setSelectedText(selectedText);
+    const selectionListener = (message: { action: string; data?: string }) => {
+      if (message.action !== "selectedText") return;
+      setSelectedText(message?.data as string);
+      setIsLoading(true);
     };
 
-    document.addEventListener("selectionchange", onSelectionChange);
+    chrome.runtime.onMessage.addListener(selectionListener);
     return () => {
-      document.removeEventListener("selectionchange", onSelectionChange);
+      chrome.runtime.onMessage.removeListener(selectionListener);
     };
   }, []);
 
@@ -70,7 +70,7 @@ const App = () => {
       isOpen={isOpen}
       onClose={() => {
         setIsOpen(false);
-        setSelectedText(null);
+        setSelectedText("");
       }}
     >
       {selectedText && (
@@ -87,37 +87,8 @@ const App = () => {
       )}
 
       <div className="container">
-        {isLoading && (
-          <>
-            <h2 className="text-slate-900 w-full rounded-md text-xs font-light mb-4">
-              Working on it...
-            </h2>
-            <div className="w-full h-full max-h-[300px] flex flex-col items-center justify-center overflow-hidden rounded-md">
-              <div className="w-full h-full relative">
-                <div className="absolute inset-x-20 top-0 left-0 right-0 m-auto bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-3/4 blur-sm"></div>
-                <div className="absolute inset-x-20 top-0 left-0 right-0 m-auto bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px w-3/4"></div>
-                <div className="absolute inset-x-60 top-0 left-0 right-0 m-auto bg-gradient-to-r from-transparent via-sky-500 to-transparent h-[5px] w-1/4 blur-sm"></div>
-                <div className="absolute inset-x-60 top-0 left-0 right-0 m-auto bg-gradient-to-r from-transparent via-sky-500 to-transparent h-px w-1/4"></div>
-                <div
-                  className="opacity-0 w-full h-[400px]"
-                  style={{ opacity: 1 }}
-                >
-                  <SparklesCore
-                    id="tsparticlesfullpage"
-                    background="transparent"
-                    minSize={0.6}
-                    maxSize={1.4}
-                    particleDensity={300}
-                    className="w-full h-full"
-                    particleColor="#000"
-                  />
-                </div>
-                <div className="absolute inset-0 w-full h-[400px] bg-white [mask-image:radial-gradient(100%_80%_at_top,transparent_20%,white)]"></div>
-              </div>
-            </div>
-          </>
-        )}
-        {improvedText && <Card data={improvedText} />}
+        <LoaderSparkles isLoading={isLoading} />
+        <Card data={improvedText} />
       </div>
     </Drawer>
   );

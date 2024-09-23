@@ -3,12 +3,12 @@ import { ImprovedTextResposne } from "./App";
 import { TypewriterEffect } from "@src/components/ui/typewriter-effect";
 
 type CardProps = {
-  data: ImprovedTextResposne;
+  data?: ImprovedTextResposne | null;
 };
 
-const Card: React.FC<CardProps> = ({
-  data: { improved, explanation = [] },
-}) => {
+const Card: React.FC<CardProps> = ({ data }) => {
+  if (!data) return null;
+  const { improved, explanation } = data || {};
   return (
     <div className="flex flex-col justify-start text-slate-900 w-full rounded-md text-xs font-light mb-2">
       <div className="mb-4">

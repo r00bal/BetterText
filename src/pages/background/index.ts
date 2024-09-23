@@ -56,19 +56,26 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 // wrtie a promise function that will retuen fake data fter 2 seconds
-const fakeData = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(dummyResponse);
-    }, 2000);
-  });
-};
+// const fakeData = () => {
+//   return new Promise((resolve) => {
+//     setTimeout(() => {
+//       resolve(dummyResponse);
+//     }, 2000);
+//   });
+// };
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   console.log("contextMenus.onClicked", info, tab);
   if (info.menuItemId === "improveEnglish" && tab?.id) {
+    const selection = info.selectionText;
+
     chrome.tabs.sendMessage(tab.id, {
       action: "openDrawer",
+      data: selection,
+    });
+
+    chrome.tabs.sendMessage(tab.id, {
+      action: "selectedText",
     });
 
     chrome.storage.sync.get("aiModel", async (data) => {
@@ -76,11 +83,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       // TODO: Implement API call to Ollama or ChatGPT based on aiModel
       // For now, we'll use a mock response
       // send  info.selectionText to API
-      const text = info.selectionText;
+      const text = selection;
       if (!text) return;
       const prompt = createPrompt(text);
-      // const response = await generateCodeSuggestionFromOllama(prompt);
-      const response = await fakeData();
+      const response = await generateCodeSuggestionFromOllama(prompt);
+      // const response = await fakeData();
       if (!response) {
         console.error("No response from AI model");
         return;
@@ -90,7 +97,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       console.log("JSONresponse", JSONresponse);
       chrome.tabs.sendMessage(tab.id, {
         action: "improveEnglish",
-        data: JSON.stringify(response),
+        data: response,
       });
     });
   }
