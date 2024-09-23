@@ -24,7 +24,7 @@ const Drawer: React.FC<DrawerProps> = ({
       <div className="flex flex-col p-6 overflow-y-auto h-full relative z-[10000] justify-start">
         <button
           onClick={onClose}
-          className="mr-auto text-gray-500 hover:text-gray-700"
+          className="ml-auto text-gray-500 hover:text-gray-700"
         >
           Close
         </button>
