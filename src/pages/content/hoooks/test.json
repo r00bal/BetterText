@@ -1,16 +1,36 @@
 {
-  "original": "Today, I work on improg task related to snahot loading times.  I fixed an issue where the loader would spin indefinitely when previewing a snapshot.",
-  "improved": "Today, I worked on improving task performance related to snapshot loading times. Specifically, I fixed an issue where the loader would spin indefinitely when previewing a snapshot.",
+  "original": "Yres I like to cook but prefer home kitchen I work as a programist and want to start my own business. My dream is to write some app that will change world and will be useful for others",
+  "improved": "Yes, I like to cook, but I prefer cooking in my own home kitchen. I work as a programmer and want to start my own business. My dream is to write an app that will change the world and be useful for others.",
   "explanation": [
     {
-      "original": "snapshot loading",
-      "correction": "loading times",
-      "explanation": "Added 'times' to make it clear what's being measured."
+      "original": "Yres",
+      "correction": "Yes,",
+      "explanation": "We started with 'yes' instead of 'yres' because it's a more common and natural way to begin a sentence."
     },
     {
-      "original": "spin indefinitely",
-      "correction": "would spin indefinitely",
-      "explanation": "Changed to a more common way of saying 'keep spinning forever'."
+      "original": "I like to cook but prefer home kitchen",
+      "correction": "I like to cook, but I prefer cooking in my own home kitchen",
+      "explanation": "We added commas to make the sentence flow better and easier to read. 'Cooking' is also a more descriptive word than just 'home kitchen'."
+    },
+    {
+      "original": "I work as a programist",
+      "correction": "I work as a programmer",
+      "explanation": "We changed 'programist' to 'programmer' because it's the correct spelling and profession. Programmers write computer code, so this fits better with your career."
+    },
+    {
+      "original": "want to start my own business.",
+      "correction": "want to start my own business",
+      "explanation": "The period at the end of a sentence is usually unnecessary before a comma or another punctuation mark. We removed it for clarity and consistency."
+    },
+    {
+      "original": "My dream is to write some app that will change world",
+      "correction": "My dream is to write an app that will change the world",
+      "explanation": "We changed 'some' to 'an', as you're referring to a specific type of app. The word 'world' should be capitalized because it's at the beginning of a sentence."
+    },
+    {
+      "original": "and will be useful for others.",
+      "correction": "and be useful for others",
+      "explanation": "The comma before 'others' is unnecessary, so we removed it. This makes the text flow better and easier to read."
     }
   ]
 }

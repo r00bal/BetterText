@@ -30,8 +30,6 @@ const App = () => {
   } = useBackgroundComunication();
 
   const { improved, explanation = [] } = improvedText || {};
-  console.log(improvedText?.explanation);
-  console.log({ improvedText, explanation });
 
   return (
     <>
@@ -113,6 +111,9 @@ const App = () => {
                       )
                     )}
                 </ul>
+                {/* <div className="card-body p-2 rounded-sm">
+
+                </div> */}
               </Collapse>
             </div>
           </div>

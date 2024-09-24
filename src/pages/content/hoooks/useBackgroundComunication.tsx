@@ -31,10 +31,10 @@ export const useBackgroundComunication = () => {
       setImprovedText(parsedData);
       setIsLoading(false);
     };
-    // chrome.runtime.onMessage.addListener(messageListener);
-    // return () => {
-    //   chrome.runtime.onMessage.removeListener(messageListener);
-    // };
+    chrome.runtime.onMessage.addListener(messageListener);
+    return () => {
+      chrome.runtime.onMessage.removeListener(messageListener);
+    };
   }, []);
 
   useEffect(() => {
@@ -43,10 +43,10 @@ export const useBackgroundComunication = () => {
       setIsOpen(true);
       setIsLoading(true);
     };
-    // chrome.runtime.onMessage.addListener(openListener);
-    // return () => {
-    //   chrome.runtime.onMessage.removeListener(openListener);
-    // };
+    chrome.runtime.onMessage.addListener(openListener);
+    return () => {
+      chrome.runtime.onMessage.removeListener(openListener);
+    };
   }, []);
 
   useEffect(() => {
@@ -55,30 +55,30 @@ export const useBackgroundComunication = () => {
       setSelectedText(message?.data as string);
     };
 
-    // chrome.runtime.onMessage.addListener(selectionListener);
-    // return () => {
-    //   chrome.runtime.onMessage.removeListener(selectionListener);
-    // };
+    chrome.runtime.onMessage.addListener(selectionListener);
+    return () => {
+      chrome.runtime.onMessage.removeListener(selectionListener);
+    };
   }, []);
 
-  useEffect(() => {
-    const fetchImprovedText = async () => {
-      setSelectedText(dummyResponse.original);
-      setIsLoading(true);
-      const response = await fakeData();
-      if (response) {
-        console.log({ response });
-        const parsedData: ImprovedTextResposne = JSON.parse(response as string);
-        console.log({ parsedData });
+  // useEffect(() => {
+  //   const fetchImprovedText = async () => {
+  //     setSelectedText(dummyResponse.original);
+  //     setIsLoading(true);
+  //     const response = await fakeData();
+  //     if (response) {
+  //       console.log({ response });
+  //       const parsedData: ImprovedTextResposne = JSON.parse(response as string);
+  //       console.log({ parsedData });
 
-        setImprovedText(parsedData as ImprovedTextResposne);
-      }
-      setIsLoading(false);
-    };
-    if (isOpen) {
-      fetchImprovedText();
-    }
-  }, [isOpen]);
+  //       setImprovedText(parsedData as ImprovedTextResposne);
+  //     }
+  //     setIsLoading(false);
+  //   };
+  //   if (isOpen) {
+  //     fetchImprovedText();
+  //   }
+  // }, [isOpen]);
 
   return {
     isOpen,
@@ -90,10 +90,10 @@ export const useBackgroundComunication = () => {
   };
 };
 
-const fakeData = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(JSON.stringify(dummyResponse));
-    }, 4000);
-  });
-};
+// const fakeData = () => {
+//   return new Promise((resolve) => {
+//     setTimeout(() => {
+//       resolve(JSON.stringify(dummyResponse));
+//     }, 4000);
+//   });
+// };
