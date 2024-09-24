@@ -30,10 +30,10 @@ export const useBackgroundComunication = () => {
       setImprovedText(parsedData);
       setIsLoading(false);
     };
-    chrome.runtime.onMessage.addListener(messageListener);
-    return () => {
-      chrome.runtime.onMessage.removeListener(messageListener);
-    };
+    // chrome.runtime.onMessage.addListener(messageListener);
+    // return () => {
+    //   chrome.runtime.onMessage.removeListener(messageListener);
+    // };
   }, []);
 
   useEffect(() => {
@@ -42,10 +42,10 @@ export const useBackgroundComunication = () => {
       setIsOpen(true);
       setIsLoading(true);
     };
-    chrome.runtime.onMessage.addListener(openListener);
-    return () => {
-      chrome.runtime.onMessage.removeListener(openListener);
-    };
+    // chrome.runtime.onMessage.addListener(openListener);
+    // return () => {
+    //   chrome.runtime.onMessage.removeListener(openListener);
+    // };
   }, []);
 
   useEffect(() => {
@@ -54,10 +54,10 @@ export const useBackgroundComunication = () => {
       setSelectedText(message?.data as string);
     };
 
-    chrome.runtime.onMessage.addListener(selectionListener);
-    return () => {
-      chrome.runtime.onMessage.removeListener(selectionListener);
-    };
+    // chrome.runtime.onMessage.addListener(selectionListener);
+    // return () => {
+    //   chrome.runtime.onMessage.removeListener(selectionListener);
+    // };
   }, []);
 
   return {
