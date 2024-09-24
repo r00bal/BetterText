@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.collapse-arrow > .collapse-title:after {
+  top: 1rem;
+}

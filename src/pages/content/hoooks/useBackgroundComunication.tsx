@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import dummyResponse from "./test.json";
 
 type ExplenationList = {
   original: string;
@@ -60,6 +61,25 @@ export const useBackgroundComunication = () => {
     // };
   }, []);
 
+  useEffect(() => {
+    const fetchImprovedText = async () => {
+      setSelectedText(dummyResponse.original);
+      setIsLoading(true);
+      const response = await fakeData();
+      if (response) {
+        console.log({ response });
+        const parsedData: ImprovedTextResposne = JSON.parse(response as string);
+        console.log({ parsedData });
+
+        setImprovedText(parsedData as ImprovedTextResposne);
+      }
+      setIsLoading(false);
+    };
+    if (isOpen) {
+      fetchImprovedText();
+    }
+  }, [isOpen]);
+
   return {
     isOpen,
     setIsOpen,
@@ -68,4 +88,12 @@ export const useBackgroundComunication = () => {
     selectedText,
     improvedText,
   };
+};
+
+const fakeData = () => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(JSON.stringify(dummyResponse));
+    }, 4000);
+  });
 };

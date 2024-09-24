@@ -1,0 +1,16 @@
+{
+  "original": "Today, I work on improg task related to snahot loading times.  I fixed an issue where the loader would spin indefinitely when previewing a snapshot.",
+  "improved": "Today, I worked on improving task performance related to snapshot loading times. Specifically, I fixed an issue where the loader would spin indefinitely when previewing a snapshot.",
+  "explanation": [
+    {
+      "original": "snapshot loading",
+      "correction": "loading times",
+      "explanation": "Added 'times' to make it clear what's being measured."
+    },
+    {
+      "original": "spin indefinitely",
+      "correction": "would spin indefinitely",
+      "explanation": "Changed to a more common way of saying 'keep spinning forever'."
+    }
+  ]
+}

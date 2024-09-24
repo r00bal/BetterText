@@ -4,6 +4,9 @@ import Card from "./Card";
 import { LoaderSparkles } from "./LoaderSparkles";
 import { useBackgroundComunication } from "./hoooks/useBackgroundComunication";
 import { TypewriterEffect } from "@src/components/ui/typewriter-effect";
+import { Collapse } from "./Collapse";
+import { Loader } from "./Loader";
+import { motion } from "framer-motion";
 
 type ExplenationList = {
   original: string;
@@ -26,94 +29,94 @@ const App = () => {
     setSelectedText,
   } = useBackgroundComunication();
 
-  const { improved, explanation } = improvedText || {};
+  const { improved, explanation = [] } = improvedText || {};
+  console.log(improvedText?.explanation);
+  console.log({ improvedText, explanation });
+
   return (
     <>
       <button onClick={() => setIsOpen((open) => !open)}>
         OPEN BETTER ENGLISH
       </button>
       {isOpen && (
-        <div className="card bg-base-100 w-96 shadow-xl fixed top-[50px] right-[50px] z-[100000]">
+        <motion.div
+          drag
+          className="card bg-base-100 w-96 shadow-xl fixed top-[50px] right-[50px] z-[100000]"
+        >
           <div className="card-body p-2 rounded-sm">
             <div className="card-actions justify-end">
               <button
-                className="btn btn-square btn-sm"
+                className="btn btn-outline btn-secondary"
                 onClick={() => {
                   setIsOpen(false);
                   setSelectedText("");
                 }}
               >
-                CLOSE
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
               </button>
             </div>
             <div>
-              <div className="collapse bg-base-200  text-slate-900 text-xs font-bold mb-2">
-                <input type="checkbox" className="min-h-4" />
-                <div className="collapse-title text-xs font-medium p-2 min-h-4 leading-4">
-                  Oryginal
-                </div>
-                <div className="collapse-content">
-                  <textarea
-                    className="text-gray-500 w-full h-auto max-h-[300px] overflow-y-auto rounded-md text-xs font-light bg-zinc-50 p-2 border border-zinc-300 border-solid"
-                    style={{ minHeight: "100px", maxHeight: "300px" }}
-                    value={selectedText}
+              <Collapse title="Orginal">
+                <textarea
+                  className="text-gray-500 w-full [field-sizing:content] overflow-y-auto rounded-md text-xs font-light bg-zinc-50 p-2 border border-zinc-300 border-solid"
+                  value={selectedText}
+                />
+              </Collapse>
+              <Collapse isOpen={true}>
+                <Loader isLoading={isLoading} />
+                {!isLoading && improved && (
+                  <TypewriterEffect
+                    words={improved
+                      .split(" ")
+                      .map((word: string) => ({ text: word }))}
                   />
-                </div>
-              </div>
-              <div className="collapse bg-base-200  text-slate-900 text-xs font-bold mb-2">
-                <input type="checkbox" />
-                <div className="collapse-title">Improved</div>
-                <div className="collapse-content flex flex-col justify-start text-slate-900 w-full rounded-md text-xs font-light mb-2">
-                  {isLoading && (
-                    <span className="loading loading-ring loading-lg m-auto"></span>
-                  )}
-                  {improved && (
-                    <TypewriterEffect
-                      words={improved
-                        .split(" ")
-                        .map((word: string) => ({ text: word }))}
-                    />
-                  )}
-                </div>
-              </div>
-              <div className="collapse bg-base-200  text-slate-900 text-xs font-bold mb-2">
-                <input type="checkbox" />
-                <div className="collapse-title">Changes</div>
-                <div className="collapse-content">
-                  {isLoading && (
-                    <span className="loading loading-ring loading-lg"></span>
-                  )}
-                  <ul>
-                    {explanation &&
-                      explanation.map(
-                        ({ original, correction, explanation }, index) => (
-                          <li
-                            key={index}
-                            className="text-gray-500 w-full h-fit rounded-md text-xs font-light bg-zinc-50 p-2 border border-zinc-300 border-solid mb-4"
-                          >
-                            <p className="mb-1">
-                              <span className="font-bold">Diff : </span>
-                              <span className="text-rose-600 bg-red-200 font-bold">
-                                {original}
-                              </span>{" "}
-                              |
-                              <span className="bg-green-200 text-green-600 font-bold">
-                                {correction}
-                              </span>
-                            </p>
-                            <p>
-                              <span className="font-bold">Explanation : </span>
-                              {explanation}
-                            </p>
-                          </li>
-                        )
-                      )}
-                  </ul>
-                </div>
-              </div>
+                )}
+              </Collapse>
+              <Collapse title="Changes">
+                <Loader isLoading={isLoading} />
+                <ul>
+                  {explanation &&
+                    explanation.map(
+                      ({ original, correction, explanation }, index) => (
+                        <li
+                          key={index}
+                          className="text-gray-500 w-full h-fit rounded-md text-xs font-light bg-zinc-50 p-2 border border-zinc-300 border-solid mb-4"
+                        >
+                          <p className="mb-1">
+                            <span className="font-bold">Diff : </span>
+                            <span className="text-rose-600 bg-red-200 font-bold">
+                              {original}
+                            </span>{" "}
+                            |
+                            <span className="bg-green-200 text-green-600 font-bold">
+                              {correction}
+                            </span>
+                          </p>
+                          <p>
+                            <span className="font-bold">Explanation : </span>
+                            {explanation}
+                          </p>
+                        </li>
+                      )
+                    )}
+                </ul>
+              </Collapse>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </>
   );
