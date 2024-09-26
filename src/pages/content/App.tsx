@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useBackgroundComunication } from "./hoooks/useBackgroundComunication";
 import { TypewriterEffect } from "@src/components/ui/typewriter-effect";
 import { Collapse } from "./Collapse";
@@ -58,6 +58,19 @@ const App = () => {
   function startDrag(event) {
     controls.start(event);
   }
+
+  const newHtml = useMemo(() => {
+    let newHtml = selectedText;
+    explanation.forEach(({ original, correction, explanation }, index) => {
+      newHtml = newHtml.replace(
+        original,
+        `<span class="!text-rose-600 !bg-red-200 !font-bold">${original}</span><span class="bg-green-200 text-green-600 font-bold">${correction}</span>`
+      );
+    });
+    console.log({ newHtml });
+
+    return `<p>${newHtml}</p>`;
+  }, [selectedText, explanation]);
 
   return (
     <>
@@ -130,32 +143,13 @@ const App = () => {
                 </Collapse>
                 <Collapse title="Changes">
                   <Loader isLoading={isLoading} />
-                  <ul>
-                    {explanation &&
-                      explanation.map(
-                        ({ original, correction, explanation }, index) => (
-                          <li
-                            key={index}
-                            className="text-gray-500 w-full h-fit rounded-md text-xs font-light bg-zinc-50 p-2 border border-zinc-300 border-solid mb-4"
-                          >
-                            <p className="mb-1">
-                              <span className="font-bold">Diff : </span>
-                              <span className="text-rose-600 bg-red-200 font-bold">
-                                {original}
-                              </span>{" "}
-                              |
-                              <span className="bg-green-200 text-green-600 font-bold">
-                                {correction}
-                              </span>
-                            </p>
-                            <p>
-                              <span className="font-bold">Explanation : </span>
-                              {explanation}
-                            </p>
-                          </li>
-                        )
-                      )}
-                  </ul>
+                  <div className="card-body p-2 rounded-sm">
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: newHtml,
+                      }}
+                    />
+                  </div>
                   {/* <div className="card-body p-2 rounded-sm">
 
                 </div> */}
