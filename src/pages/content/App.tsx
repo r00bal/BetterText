@@ -64,7 +64,8 @@ const App = () => {
     explanation.forEach(({ original, correction, explanation }, index) => {
       newHtml = newHtml.replace(
         original,
-        `<span class="!text-rose-600 !bg-red-200 !font-bold">${original}</span><span class="bg-green-200 text-green-600 font-bold">${correction}</span>`
+
+        `<span class="!text-rose-600 !bg-red-200 !font-bold px-1 py-0.5">${original}</span><span class="bg-green-200 text-green-600 font-bold px-1 py-0.5">${correction}</span>`
       );
     });
     console.log({ newHtml });
@@ -145,6 +146,7 @@ const App = () => {
                   <Loader isLoading={isLoading} />
                   <div className="card-body p-2 rounded-sm">
                     <div
+                      className="rounded-md text-xs bg-zinc-50 p-2 border border-zinc-300 border-solid font-normal text-neutral-700 dark:text-neutral-200 leading-6"
                       dangerouslySetInnerHTML={{
                         __html: newHtml,
                       }}
