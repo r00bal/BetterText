@@ -4,6 +4,7 @@ import { TypewriterEffect } from "@src/components/ui/typewriter-effect";
 import { Collapse } from "./Collapse";
 import { Loader } from "./Loader";
 import { motion, useDragControls } from "framer-motion";
+import { Difference } from "./Difference";
 
 type ExplenationList = {
   original: string;
@@ -36,6 +37,10 @@ const App = () => {
     bottom: 0,
   });
 
+  const [activeExplenation, setActiveExplenation] = useState<null | string>(
+    null
+  );
+
   useEffect(() => {
     const updateConstraints = () => {
       const cardElement = document.querySelector(".card");
@@ -59,19 +64,52 @@ const App = () => {
     controls.start(event);
   }
 
-  const newHtml = useMemo(() => {
-    let newHtml = selectedText;
-    explanation.forEach(({ original, correction, explanation }, index) => {
-      newHtml = newHtml.replace(
-        original,
+  const differenceArray = useMemo(() => {
+    let markedSelectedText = selectedText;
+    const orginalTextArray = explanation.map(({ original }) => original);
 
-        `<span class="!text-rose-600 !bg-red-200 !font-bold px-1 py-0.5">${original}</span><span class="bg-green-200 text-green-600 font-bold px-1 py-0.5">${correction}</span>`
+    orginalTextArray.forEach((original) => {
+      markedSelectedText = markedSelectedText.replace(
+        original,
+        `|${original}|`
       );
     });
-    console.log({ newHtml });
+    const differenceArray = markedSelectedText.split("|").map((text) => {
+      return orginalTextArray.some((orginalText) => {
+        const copyorginalText = orginalText;
+        const copytext = text;
+        console.log(
+          copytext.replace(/\s+/g, " ").trim(),
+          copyorginalText.replace(/\s+/g, " ").trim(),
+          copytext
+            .replace(/\s+/g, " ")
+            .trim()
+            .includes(copyorginalText.replace(/\s+/g, " ").trim())
+        );
 
-    return `<p>${newHtml}</p>`;
+        return copytext
+          .replace(/\s+/g, " ")
+          .trim()
+          .includes(copyorginalText.replace(/\s+/g, " ").trim());
+      })
+        ? {
+            diff: true,
+            ...explanation.find(
+              ({ original }) =>
+                original === text ||
+                text
+                  .replace(/\s+/g, " ")
+                  .trim()
+                  .includes(original.replace(/\s+/g, " ").trim())
+            ),
+          }
+        : { text, diff: false };
+    });
+
+    return differenceArray;
   }, [selectedText, explanation]);
+
+  console.log(differenceArray);
 
   return (
     <>
@@ -145,16 +183,26 @@ const App = () => {
                 <Collapse title="Changes">
                   <Loader isLoading={isLoading} />
                   <div className="card-body p-2 rounded-sm">
-                    <div
-                      className="rounded-md text-xs bg-zinc-50 p-2 border border-zinc-300 border-solid font-normal text-neutral-700 dark:text-neutral-200 leading-6"
-                      dangerouslySetInnerHTML={{
-                        __html: newHtml,
-                      }}
-                    />
+                    <div className="rounded-md text-xs bg-zinc-50 p-2 border border-zinc-300 border-solid font-normal text-neutral-700 dark:text-neutral-200 leading-6">
+                      {differenceArray.map((text) => {
+                        return text.diff ? (
+                          <Difference
+                            key={text.original}
+                            original={text.original}
+                            correction={text.correction}
+                            onDiffClick={() => {
+                              setActiveExplenation(text.explanation);
+                            }}
+                          />
+                        ) : (
+                          <span key={text.text}>{text.text}</span>
+                        );
+                      })}
+                    </div>
                   </div>
-                  {/* <div className="card-body p-2 rounded-sm">
-
-                </div> */}
+                  <div className="card-body p-2 rounded-sm">
+                    {activeExplenation}
+                  </div>
                 </Collapse>
               </div>
             </div>
