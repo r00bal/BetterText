@@ -9,7 +9,7 @@ export const Collapse = ({ title, children, isOpen }: CollapseProps) => {
     <div
       className={`collapse ${
         isOpen && "collapse-open"
-      } bg-base-200 text-gray-500 text-xs font-light mb-2 rounded-md collapse-arrow `}
+      } bg-slate-50 text-gray-500 text-xs font-light mb-4 rounded-md collapse-arrow shadow-md`}
     >
       <input type="checkbox" className="min-h-4" />
       {title && (

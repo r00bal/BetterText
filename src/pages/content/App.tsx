@@ -64,49 +64,50 @@ const App = () => {
     controls.start(event);
   }
 
-  const differenceArray = useMemo(() => {
-    let markedSelectedText = selectedText;
-    const orginalTextArray = explanation.map(({ original }) => original);
+  const normalizeText = (text: string) => text.replace(/\s+/g, " ").trim();
 
-    orginalTextArray.forEach((original) => {
-      markedSelectedText = markedSelectedText.replace(
-        original,
-        `|${original}|`
+  const markSelectedText = (text: string, originals: string[]) => {
+    let markedText = text;
+    originals.forEach((original) => {
+      markedText = markedText.replace(original, `|${original}|`);
+    });
+    return markedText;
+  };
+
+  const createDifferenceArray = (
+    markedText: string,
+    originals: string[],
+    explanations: ExplenationList[]
+  ) => {
+    return markedText.split("|").map((text) => {
+      const isDiff = originals.some((original) =>
+        normalizeText(text).includes(normalizeText(original))
       );
-    });
-    const differenceArray = markedSelectedText.split("|").map((text) => {
-      return orginalTextArray.some((orginalText) => {
-        const copyorginalText = orginalText;
-        const copytext = text;
-        console.log(
-          copytext.replace(/\s+/g, " ").trim(),
-          copyorginalText.replace(/\s+/g, " ").trim(),
-          copytext
-            .replace(/\s+/g, " ")
-            .trim()
-            .includes(copyorginalText.replace(/\s+/g, " ").trim())
+
+      if (isDiff) {
+        const explanation = explanations.find(
+          ({ original }) =>
+            original === text ||
+            normalizeText(text).includes(normalizeText(original))
         );
+        return { diff: true, ...explanation };
+      }
 
-        return copytext
-          .replace(/\s+/g, " ")
-          .trim()
-          .includes(copyorginalText.replace(/\s+/g, " ").trim());
-      })
-        ? {
-            diff: true,
-            ...explanation.find(
-              ({ original }) =>
-                original === text ||
-                text
-                  .replace(/\s+/g, " ")
-                  .trim()
-                  .includes(original.replace(/\s+/g, " ").trim())
-            ),
-          }
-        : { text, diff: false };
+      return { text, diff: false };
     });
+  };
 
-    return differenceArray;
+  const differenceArray = useMemo(() => {
+    const originalTextArray = explanation.map(({ original }) => original);
+    const markedSelectedText = markSelectedText(
+      selectedText,
+      originalTextArray
+    );
+    return createDifferenceArray(
+      markedSelectedText,
+      originalTextArray,
+      explanation
+    );
   }, [selectedText, explanation]);
 
   console.log(differenceArray);
@@ -123,39 +124,37 @@ const App = () => {
             dragControls={controls}
             dragConstraints={constraints}
             dragListener={false}
-            className="card bg-base-100 w-96 shadow-xl fixed top-[50px] right-[50px] z-[100000]"
+            className="card  w-96 shadow-xl fixed top-[50px] right-[50px] z-[100000] border border-solid border-gray-300"
           >
-            <div className="card-body p-2 rounded-sm">
-              <div className="card-actions justify-between">
-                <button
-                  className="btn btn-sm btn-outline btn-neutral btn-wide start block flex-grow"
-                  onPointerDown={startDrag}
+            <div
+              className="w-full h-10 absolute top-0 bg-sky-300 rounded-t-xl z-[100002] card-actions justify-end cursor-pointer"
+              onPointerDown={startDrag}
+            >
+              {" "}
+              <button
+                className="btn btn-square btn-error btn-outline z-[100005] h-10 min-h-10 p-0 border-0"
+                onClick={() => {
+                  setIsOpen(false);
+                  setSelectedText("");
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  drag me
-                </button>
-                <button
-                  className="btn btn-sm btn-outline btn-secondary"
-                  onClick={() => {
-                    setIsOpen(false);
-                    setSelectedText("");
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="card-body rounded-sm z-[100003] p-4 mt-10">
               <div>
                 <Collapse title="Orginal">
                   <div
@@ -183,7 +182,7 @@ const App = () => {
                 <Collapse title="Changes">
                   <Loader isLoading={isLoading} />
                   <div className="card-body p-2 rounded-sm">
-                    <div className="rounded-md text-xs bg-zinc-50 p-2 border border-zinc-300 border-solid font-normal text-neutral-700 dark:text-neutral-200 leading-6">
+                    <div className="rounded-md text-xs bg-zinc-50 p-4 border border-zinc-300 border-solid font-normal text-neutral-700 dark:text-neutral-200 leading-6">
                       {differenceArray.map((text) => {
                         return text.diff ? (
                           <Difference
