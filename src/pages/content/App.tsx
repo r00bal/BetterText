@@ -124,15 +124,15 @@ const App = () => {
             dragControls={controls}
             dragConstraints={constraints}
             dragListener={false}
-            className="card  w-96 shadow-xl fixed top-[50px] right-[50px] z-[100000] border border-solid border-gray-300"
+            className="card w-96 shadow-xl fixed top-[50px] right-[50px] z-[100000] border border-solid border-gray-300"
           >
             <div
-              className="w-full h-10 absolute top-0 bg-sky-300 rounded-t-xl z-[100002] card-actions justify-end cursor-pointer"
+              className="w-full h-10 absolute top-0 rounded-t-2xl z-[100002] card-actions justify-end border-b border-solid border-gray-300 bg-gray-50"
               onPointerDown={startDrag}
             >
               {" "}
               <button
-                className="btn btn-square btn-error btn-outline z-[100005] h-10 min-h-10 p-0 border-0"
+                className="btn btn-square btn-outline z-[100005] h-10 min-h-10 p-0 border-0"
                 onClick={() => {
                   setIsOpen(false);
                   setSelectedText("");
