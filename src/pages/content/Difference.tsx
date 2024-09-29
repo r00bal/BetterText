@@ -17,6 +17,7 @@ export const Difference = ({
       <span className="bg-green-200 text-green-600 font-bold px-1 py-0.5">
         {correction}
       </span>
+      {"  "}
     </span>
   );
 };

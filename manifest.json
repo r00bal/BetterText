@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "<name in manifest.json>",
-  "description": "<description in manifest.json>",
+  "version": "1.0.1",
+  "name": "CorrectMyEnglish",
+  "description": "It improves and correct you english writing",
   "background": {
     "service_worker": "src/pages/background/index.ts",
     "type": "module"

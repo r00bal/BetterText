@@ -127,12 +127,12 @@ const App = () => {
             className="card w-96 shadow-xl fixed top-[50px] right-[50px] z-[100000] border border-solid border-gray-300"
           >
             <div
-              className="w-full h-10 absolute top-0 rounded-t-2xl z-[100002] card-actions justify-end border-b border-solid border-gray-300 bg-gray-50"
+              className="w-full h-10 absolute top-0 rounded-t-2xl z-[100002] card-actions items-center justify-between border-b border-solid border-gray-300 bg-gray-50"
               onPointerDown={startDrag}
             >
-              {" "}
+              <h2 className="text-blue-600 font-bold ml-4">BetterEnglish</h2>
               <button
-                className="btn btn-square btn-outline z-[100005] h-10 min-h-10 p-0 border-0"
+                className="btn btn-square btn-outline z-[100005] h-10 min-h-10 p-0 border-0 text-gray-400 hover:bg-blue-600 hover:text-white"
                 onClick={() => {
                   setIsOpen(false);
                   setSelectedText("");
@@ -156,7 +156,7 @@ const App = () => {
             </div>
             <div className="card-body rounded-sm z-[100003] p-4 mt-10">
               <div>
-                <Collapse title="Orginal">
+                <Collapse title="ORGINAL">
                   <div
                     onPointerDown={(e) => {
                       e.preventDefault();
@@ -179,7 +179,7 @@ const App = () => {
                     />
                   )}
                 </Collapse>
-                <Collapse title="Changes">
+                <Collapse title="CHANGES">
                   <Loader isLoading={isLoading} />
                   <div className="card-body p-2 rounded-sm">
                     <div className="rounded-md text-xs bg-zinc-50 p-4 border border-zinc-300 border-solid font-normal text-neutral-700 dark:text-neutral-200 leading-6">
