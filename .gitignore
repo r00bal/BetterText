@@ -388,3 +388,7 @@ $RECYCLE.BIN/
 
 #generated manifest
 public/manifest.json
+
+node_modules
+credentials.json
+dist
