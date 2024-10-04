@@ -1,6 +1,35 @@
 console.log("background script loaded");
 // import dummyResponse from "./response.json";
 
+// TODO: getAuthToken is not used yet, need to figure how to implement it
+// function getAuthToken(interactive) {
+//   chrome.identity.getAuthToken({ interactive: interactive }, function (token) {
+//     if (chrome.runtime.lastError) {
+//       console.error(chrome.runtime.lastError);
+//       return;
+//     }
+//     console.log("Access Token acquired: " + token);
+
+//     // Use the access token directly
+//     fetch("http://localhost:3000/api/openai", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: "Bearer " + token,
+//       },
+//     })
+//       .then((response) => response.json())
+//       .then((data) => {
+//         console.log("data", data);
+//       })
+//       .catch((error) => {
+//         console.error("Error:", error);
+//       });
+//   });
+// }
+
+// getAuthToken(true);
+
 const generateCodeSuggestionFromOllama = async (prompt: string) => {
   const apiUrl = `http://localhost:11434/api/generate`;
   const body = {
@@ -48,6 +77,7 @@ const createPrompt = (text: string) => {
 };
 
 chrome.runtime.onInstalled.addListener(() => {
+  console.log("Extension Installed");
   chrome.contextMenus.create({
     id: "improveEnglish",
     title: "Improve my English",

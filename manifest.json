@@ -16,7 +16,7 @@
   "icons": {
     "128": "icon-128.png"
   },
-  "permissions": ["activeTab", "contextMenus", "storage"],
+  "permissions": ["activeTab", "contextMenus", "storage", "identity"],
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*", "<all_urls>"],
@@ -29,5 +29,9 @@
       "resources": ["contentStyle.css", "icon-128.png", "icon-32.png"],
       "matches": []
     }
-  ]
+  ],
+  "oauth2": {
+    "client_id": "922404288404-p214oir9lmbkgc7hrjn0kso5it34g4sg.apps.googleusercontent.com",
+    "scopes": ["openid", "email", "profile"]
+  }
 }
