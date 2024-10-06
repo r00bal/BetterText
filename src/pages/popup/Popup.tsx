@@ -1,34 +1,9 @@
 import React, { useState, useEffect } from "react";
 import logo from "@assets/img/logo.svg";
-
-// New component for the input field
-const ModeInput = ({
-  mode,
-  value,
-  onChange,
-}: {
-  mode: string;
-  value: string;
-  onChange: (value: string) => void;
-}) => {
-  const placeholder = mode === "ollama" ? "Enter Ollama URL" : "Enter API Key";
-  const isHidden = mode !== "ollama" && mode !== "api";
-  // visibility: hidden is not supported in Tailwind
-  return (
-    <div className={`mt-4 ${isHidden ? "invisible" : ""}`}>
-      <input
-        type="text"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="input input-bordered w-full"
-      />
-    </div>
-  );
-};
+import { ModeInput } from "./ModeInput";
 
 function Popup() {
-  const [mode, setMode] = useState<string>("free");
+  const [mode, setMode] = useState<Mode>("free");
   const [inputValue, setInputValue] = useState<string>("");
 
   const openChatGPT = () => {
@@ -61,31 +36,33 @@ function Popup() {
 
   useEffect(() => {
     chrome.storage.sync.get(["mode", "ollamaUrl", "apiKey"], (result) => {
-      if (result.mode) setMode(result.mode);
+      if (result.mode) setMode(result.mode as Mode);
       if (result.ollamaUrl && result.mode === "ollama")
         setInputValue(result.ollamaUrl);
       if (result.apiKey && result.mode === "api") setInputValue(result.apiKey);
     });
   }, []);
 
-  // Clear input value when mode changes
-  useEffect(() => {
+  const handleModeChange = (mode: Mode) => {
+    setMode(mode);
     setInputValue("");
-  }, [mode]);
+  };
+
+  const options: Mode[] = ["free", "ollama", "api", "full"];
 
   return (
     <div className="p-4 bg-base-100 rounded shadow-md w-full">
       <img src={logo} alt="Logo" className="w-16 h-16 mx-auto mb-4" />
       <h2 className="text-xl font-semibold mb-4 text-center">Select Mode</h2>
       <div className="space-y-2">
-        {["free", "ollama", "api", "full"].map((option) => (
+        {options.map((option) => (
           <div key={option} className="form-control">
             <label className="label cursor-pointer justify-start">
               <input
                 type="checkbox"
                 className="toggle toggle-primary"
                 checked={mode === option}
-                onChange={() => setMode(option)}
+                onChange={() => handleModeChange(option)}
               />
               <span className="label-text ml-2">
                 {option === "free" && "Free with ChatGPT"}
@@ -108,3 +85,4 @@ function Popup() {
 }
 
 export default Popup;
+export type Mode = "free" | "ollama" | "api" | "full";
