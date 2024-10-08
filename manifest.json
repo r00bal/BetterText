@@ -16,12 +16,22 @@
   "icons": {
     "128": "icon-128.png"
   },
-  "permissions": ["activeTab", "contextMenus", "storage", "identity"],
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "storage",
+    "identity",
+    "scripting"
+  ],
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*", "<all_urls>"],
       "js": ["src/pages/content/index.tsx"],
       "css": ["contentStyle.css"]
+    },
+    {
+      "matches": ["https://chatgpt.com/*"],
+      "js": ["src/pages/content/injectScripts/useChatGPTTabScript.ts"]
     }
   ],
   "web_accessible_resources": [

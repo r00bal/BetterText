@@ -7,11 +7,31 @@ function Popup() {
   const [inputValue, setInputValue] = useState<string>("");
 
   const openChatGPT = () => {
-    chrome.tabs.query({ url: "https://chat.openai.com/*" }, (tabs) => {
+    chrome.tabs.query({ url: "https://chatgpt.com/*" }, (tabs) => {
+      console.log("tabs", tabs);
       if (tabs.length === 0) {
-        chrome.tabs.create({ url: "https://chat.openai.com/" });
+        chrome.tabs.create({ url: "https://chatgpt.com" }, (newTab) => {
+          // Save the new tab ID to local storage
+          if (newTab.id) {
+            console.log("newTab", newTab);
+            chrome.storage.sync.set({ chatGPTTabId: newTab.id });
+            chrome.scripting.executeScript({
+              target: { tabId: newTab.id },
+              files: ["src/pages/content/injectScripts/useChatGPTTabScript.ts"],
+            });
+          }
+        });
       } else {
-        chrome.tabs.update(tabs[0].id!, { active: true });
+        console.log("tabs", tabs);
+        const tabId = tabs[0].id;
+        if (tabId) {
+          console.log("tabId", tabId);
+          chrome.storage.sync.set({ chatGPTTabId: tabId });
+          chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            files: ["src/pages/content/injectScripts/useChatGPTTabScript.ts"],
+          });
+        }
       }
     });
   };
@@ -35,7 +55,7 @@ function Popup() {
   };
 
   useEffect(() => {
-    chrome.storage.sync.get(["mode", "ollamaUrl", "apiKey"], (result) => {
+    chrome.storage.sync.get(storageOptions, (result: StorageSync) => {
       if (result.mode) setMode(result.mode as Mode);
       if (result.ollamaUrl && result.mode === "ollama")
         setInputValue(result.ollamaUrl);
@@ -47,8 +67,6 @@ function Popup() {
     setMode(mode);
     setInputValue("");
   };
-
-  const options: Mode[] = ["free", "ollama", "api", "full"];
 
   return (
     <div className="p-4 bg-base-100 rounded shadow-md w-full">
@@ -85,4 +103,20 @@ function Popup() {
 }
 
 export default Popup;
+
 export type Mode = "free" | "ollama" | "api" | "full";
+
+export type StorageSync = {
+  mode?: Mode;
+  ollamaUrl?: string;
+  apiKey?: string;
+  chatGPTTabId?: number;
+};
+export type StorageOptions = "mode" | "ollamaUrl" | "apiKey" | "chatGPTTabId";
+export const storageOptions: StorageOptions[] = [
+  "mode",
+  "ollamaUrl",
+  "apiKey",
+  "chatGPTTabId",
+];
+export const options: Mode[] = ["free", "ollama", "api", "full"];

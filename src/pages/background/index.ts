@@ -1,5 +1,7 @@
+import { StorageSync } from "../popup/Popup";
+
 console.log("background script loaded");
-// import dummyResponse from "./response.json";
+import dummyResponse from "./response.json";
 
 // TODO: getAuthToken is not used yet, need to figure how to implement it
 // function getAuthToken(interactive) {
@@ -85,16 +87,7 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-// wrtie a promise function that will retuen fake data fter 2 seconds
-// const fakeData = () => {
-//   return new Promise((resolve) => {
-//     setTimeout(() => {
-//       resolve(dummyResponse);
-//     }, 2000);
-//   });
-// };
-
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   console.log("contextMenus.onClicked", info, tab);
   if (info.menuItemId === "improveEnglish" && tab?.id) {
     const selection = info.selectionText;
@@ -108,34 +101,57 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       data: selection,
     });
 
-    chrome.storage.sync.get("aiModel", async (data) => {
-      const aiModel = data.aiModel || "ollama";
-      // TODO: Implement API call to Ollama or ChatGPT based on aiModel
-      // For now, we'll use a mock response
-      // send  info.selectionText to API
+    const mode = await getStorageValue("mode");
+
+    if (mode === "ollama") {
       const text = selection;
       if (!text) return;
       const prompt = createPrompt(text);
       const response = await generateCodeSuggestionFromOllama(prompt);
-      // const response = await fakeData();
+
       if (!response) {
         console.error("No response from AI model");
         return;
       }
       // const JSONresponse = JSON.parse(response);
-      const JSONresponse = response;
+      const JSONresponse = response.json();
       console.log("JSONresponse", JSONresponse);
       chrome.tabs.sendMessage(tab.id, {
         action: "improveEnglish",
         data: response,
       });
-    });
+    }
+
+    if (mode === "free") {
+      const text = selection;
+      const chatGPTTabId = await getStorageValue("chatGPTTabId");
+      console.log("free mode", chatGPTTabId);
+      if (!chatGPTTabId) return;
+
+      console.log("free mode", chatGPTTabId);
+      // TODO find chatgpt tab and inject there a script that will input the prompt and send to chatgpt. Add also a listener to the chatgpt tab to get the response and send to the content script
+      chrome.tabs.sendMessage(chatGPTTabId, {
+        action: "askChatGPT",
+        prompt: `correct english, simply friendly style, response in JSON string format: { correctedText: ... ,mistakes: [{oryginal: ...., corrected: ...., explenation: ... } ]}: ${text} `,
+      });
+    }
   }
 });
 
-// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-//   if (request.action === "improveEnglish") {
+const getStorageValue = async <T extends keyof StorageSync>(
+  key: T
+): Promise<StorageSync[T]> => {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get(key, (result) => {
+      resolve(result[key] as StorageSync[T]);
+    });
+  });
+};
 
-//   }
-//   return true;
-// });
+export const fakeData = () => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(dummyResponse);
+    }, 2000);
+  });
+};
