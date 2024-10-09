@@ -43,6 +43,7 @@ async function askChatGPT(prompt: string) {
   );
   console.log(textarea);
   if (textarea) {
+    textarea.focus();
     textarea.innerHTML = "";
     textarea.textContent = prompt;
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
@@ -56,6 +57,7 @@ async function askChatGPT(prompt: string) {
   ) as HTMLButtonElement;
   if (sendButton) {
     console.log("click send button");
+    sendButton.focus();
     sendButton.click();
   }
 
