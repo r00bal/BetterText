@@ -7,33 +7,35 @@ function Popup() {
   const [inputValue, setInputValue] = useState<string>("");
 
   const openChatGPT = () => {
-    chrome.tabs.query({ url: "https://chatgpt.com/*" }, (tabs) => {
-      console.log("tabs", tabs);
-      if (tabs.length === 0) {
-        chrome.tabs.create({ url: "https://chatgpt.com" }, (newTab) => {
-          // Save the new tab ID to local storage
-          if (newTab.id) {
-            console.log("newTab", newTab);
-            chrome.storage.sync.set({ chatGPTTabId: newTab.id });
+    chrome.tabs.query(
+      { url: ["https://chatgpt.com/*", "https://www.chatgpt.com/*"] },
+      (tabs) => {
+        console.log("tabs", tabs);
+        if (tabs.length === 0) {
+          chrome.tabs.create({ url: "https://chatgpt.com" }, (newTab) => {
+            if (newTab.id) {
+              chrome.storage.sync.set({ chatGPTTabId: newTab.id });
+              chrome.scripting.executeScript({
+                target: { tabId: newTab.id },
+                files: [
+                  "src/pages/content/injectScripts/useChatGPTTabScript.ts",
+                ],
+              });
+            }
+          });
+        } else {
+          const tabId = tabs[0].id;
+          if (tabId) {
+            console.log("tabId", tabIds);
+            chrome.storage.sync.set({ chatGPTTabId: tabId });
             chrome.scripting.executeScript({
-              target: { tabId: newTab.id },
+              target: { tabId: tabId },
               files: ["src/pages/content/injectScripts/useChatGPTTabScript.ts"],
             });
           }
-        });
-      } else {
-        console.log("tabs", tabs);
-        const tabId = tabs[0].id;
-        if (tabId) {
-          console.log("tabId", tabId);
-          chrome.storage.sync.set({ chatGPTTabId: tabId });
-          chrome.scripting.executeScript({
-            target: { tabId: tabId },
-            files: ["src/pages/content/injectScripts/useChatGPTTabScript.ts"],
-          });
         }
       }
-    });
+    );
   };
 
   const handleSubmit = () => {

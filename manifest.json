@@ -17,12 +17,14 @@
     "128": "icon-128.png"
   },
   "permissions": [
+    "tabs",
     "activeTab",
     "contextMenus",
     "storage",
     "identity",
     "scripting"
   ],
+  "host_permissions": ["https://chatgpt.com/*"],
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*", "<all_urls>"],

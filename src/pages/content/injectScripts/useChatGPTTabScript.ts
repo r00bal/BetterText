@@ -1,28 +1,55 @@
 console.log("useChatGPTTabScript");
 
 // Listen for messages from the extension
-chrome.runtime.onMessage.addListener((request) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("request", request);
   if (request.action === "askChatGPT") {
     console.log("askChatGPT(request.prompt);");
-    askChatGPT(request.prompt);
+    askChatGPT(request.prompt).then((response) => {
+      sendResponse(response);
+    });
+    return true;
   }
 });
+async function waitForElement<T extends Element>(selector: string): Promise<T> {
+  return new Promise((resolve) => {
+    const element = document.querySelector<T>(selector);
+    if (element) {
+      resolve(element);
+      return;
+    }
+
+    const observer = new MutationObserver((mutations, obs) => {
+      const el = document.querySelector<T>(selector);
+      if (el) {
+        resolve(el);
+        obs.disconnect();
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  });
+}
 
 async function askChatGPT(prompt: string) {
   // Type the prompt into the textarea
-  console.log("Type the prompt into the textarea", prompt);
-  const textarea = document.querySelector(
+
+  console.log("Waiting for the textarea to be available");
+  const textarea = await waitForElement<HTMLTextAreaElement>(
     "#prompt-textarea.ProseMirror[contenteditable='true']"
-  ) as HTMLTextAreaElement;
+  );
   console.log(textarea);
   if (textarea) {
     textarea.innerHTML = "";
     textarea.textContent = prompt;
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
   }
+  console.log("Type the prompt into the textarea", prompt);
   // wait 5s
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  await new Promise((resolve) => setTimeout(resolve, 500));
   // Click the send button
   const sendButton = document.querySelector(
     'button[data-testid="send-button"]'
@@ -36,12 +63,14 @@ async function askChatGPT(prompt: string) {
   await waitForResponse();
 
   // Extract and send the response back to the extension
-  const responseElement = document.querySelector(".markdown") as HTMLElement;
+  const responseElement = document.querySelector(
+    ".language-json"
+  ) as HTMLElement;
   if (responseElement) {
     const response = responseElement.innerText;
     console.log("response", response);
 
-    chrome.runtime.sendMessage({ action: "chatGPTResponse", response });
+    return response;
   }
 }
 
@@ -63,3 +92,5 @@ function waitForResponse(): Promise<void> {
     observer.observe(document.body, { childList: true, subtree: true });
   });
 }
+
+chrome.runtime.sendMessage("contentScriptReady");
