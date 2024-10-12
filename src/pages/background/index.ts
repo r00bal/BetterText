@@ -123,126 +123,45 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     }
 
     if (mode === "free") {
-      const text = selection;
-      let chatGPTTabId = (await getStorageValue("chatGPTTabId")) || null;
-      console.log("chatGPTTabId", chatGPTTabId);
-
-      const openedChatGPTTabs = await queryTabs({
-        url: ["https://chatgpt.com/*", "https://www.chatgpt.com/*"],
-      });
-
-      if (
-        !chatGPTTabId ||
-        openedChatGPTTabs.length === 0 ||
-        !openedChatGPTTabs.some((tab) => tab.id === chatGPTTabId)
-      ) {
-        chatGPTTabId = await openChatGPTTab();
-        console.log("await openChatGPTTab()", chatGPTTabId);
-
-        if (chatGPTTabId) {
-          await setStorageSync({ chatGPTTabId });
-        } else {
-          console.error("Unable to open ChatGPT tab.");
-          return;
-        }
-      }
-
-      console.log("free mode", chatGPTTabId);
-
-      try {
-        const response = await sendMessagePromise<{
-          correctedText: string;
-          mistakes: Array<{
-            original: string;
-            corrected: string;
-            explanation: string;
-          }>;
-        }>(chatGPTTabId, {
-          action: "askChatGPT",
-          prompt: `correct english, simply friendly style, response in JSON string format: { correctedText: ... ,mistakes: [{original: ...., corrected: ...., explanation: ... } ]}: ${text}`,
-        });
-
-        console.log("Response from Content Script:", response);
-
-        // Handle the response as needed
-        chrome.tabs.sendMessage(tab.id, {
-          action: "improveEnglish",
-          data: response,
-        });
-      } catch (error) {
-        console.error("Error communicating with content script:", error);
-      }
+      sendMessageToChatGPT(selection);
     }
   }
 });
 
-// Function to open a new ChatGPT tab using async/await
-const openChatGPTTab = async (): Promise<number | null> => {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.create({ url: "https://chatgpt.com" }, (newTab) => {
-      if (chrome.runtime.lastError || !newTab.id) {
-        console.error("Error creating new tab:", chrome.runtime.lastError);
-        return reject(chrome.runtime.lastError);
+// Function to find ChatGPT window
+function getChatGPTWindow(callback) {
+  chrome.windows.getAll({ populate: true }, (windows) => {
+    for (let win of windows) {
+      for (let tab of win.tabs) {
+        if (tab.url.includes("https://chatgpt.com")) {
+          callback(win, tab);
+          return;
+        }
       }
-
-      const tabId = newTab.id;
-      console.log(`ChatGPT tab created with ID: ${tabId}`);
-
-      // Listener for tab updates to check when it's fully loaded
-      const onUpdateListener = (
-        updatedTabId: number,
-        changeInfo: chrome.tabs.TabChangeInfo,
-        tab: chrome.tabs.Tab
-      ) => {
-        if (updatedTabId === tabId && changeInfo.status === "complete") {
-          console.log("ChatGPT tab fully loaded.");
-          chrome.tabs.onUpdated.removeListener(onUpdateListener);
-          // Now wait for the content script to signal readiness
-        }
-      };
-
-      chrome.tabs.onUpdated.addListener(onUpdateListener);
-
-      // Listener for messages from content scripts
-      const onMessageListener = (
-        message: any,
-        sender: chrome.runtime.MessageSender,
-        sendResponse: Function
-      ) => {
-        if (sender.tab?.id === tabId && message === "contentScriptReady") {
-          console.log(
-            "Received contentScriptReady message from content script."
-          );
-          chrome.runtime.onMessage.removeListener(onMessageListener);
-          resolve(tabId);
-        }
-      };
-
-      chrome.runtime.onMessage.addListener(onMessageListener);
-
-      // Optional: Implement a timeout to avoid waiting indefinitely
-      const timeout = setTimeout(() => {
-        console.error(
-          "Timeout waiting for content script to send readiness signal."
-        );
-        chrome.runtime.onMessage.removeListener(onMessageListener);
-        reject(new Error("Content script readiness timeout."));
-      }, 30000); // 30 seconds timeout
-
-      // Clear the timeout if the promise resolves or rejects
-      const originalResolve = resolve;
-      resolve = (value) => {
-        clearTimeout(timeout);
-        originalResolve(value);
-      };
-      const originalReject = reject;
-      reject = (reason) => {
-        clearTimeout(timeout);
-        originalReject(reason);
-      };
-    });
+    }
+    callback(null, null);
   });
-};
+}
+
+// Function to send a message to ChatGPT tab
+function sendMessageToChatGPT(message) {
+  getChatGPTWindow((win, tab) => {
+    if (tab) {
+      chrome.tabs.sendMessage(
+        tab.id,
+        {
+          action: "askChatGPT",
+          prompt: `correct english, simply friendly style, response in JSON string format: { improved: ... ,explanation: [{original: ...., correction: ...., explanation: ... } ]}: ${message}`,
+        },
+        (response) => {
+          console.log("Response from ChatGPT tab:", response);
+        }
+      );
+    } else {
+      console.error("ChatGPT tab not found!");
+    }
+  });
+}
 
 const getStorageValue = async <T extends keyof StorageSync>(
   key: T
@@ -327,3 +246,31 @@ export const sendMessagePromise = <T>(
     });
   });
 };
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  console.log("areaName", areaName);
+  console.log("areaName", areaName);
+  for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
+    console.log(
+      `Storage key "${key}" changed from "${oldValue}" to "${newValue}"`
+    );
+
+    if (key === "improveEnglish") {
+      console.log("improveEnglish", newValue);
+      // chrome.tabs.sendMessage(tabId, {
+      //   action: "improveEnglish",
+      //   data: newValue,
+      // });
+    }
+  }
+});
+
+chrome.runtime.onInstalled.addListener(() => {
+  console.log("Extension installed");
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "error") {
+    console.error("Runtime error:", message.error);
+  }
+});

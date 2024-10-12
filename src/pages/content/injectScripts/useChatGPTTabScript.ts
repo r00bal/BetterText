@@ -1,36 +1,63 @@
 console.log("useChatGPTTabScript");
 
 // Listen for messages from the extension
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request) => {
   console.log("request", request);
   if (request.action === "askChatGPT") {
-    console.log("askChatGPT(request.prompt);");
-    askChatGPT(request.prompt).then((response) => {
-      sendResponse(response);
-    });
-    return true;
+    askChatGPT(request.prompt);
   }
 });
+
 async function waitForElement<T extends Element>(selector: string): Promise<T> {
   return new Promise((resolve) => {
-    const element = document.querySelector<T>(selector);
-    if (element) {
-      resolve(element);
+    // Function to fetch the latest element matching the selector
+    const getLatestElement = () => {
+      const elements = document.querySelectorAll<T>(selector);
+      return elements.length > 0 ? elements[elements.length - 1] : null;
+    };
+
+    // Check if the element already exists
+    const existingElement = getLatestElement();
+    if (existingElement) {
+      resolve(existingElement);
       return;
     }
 
+    // Create a MutationObserver to watch for new elements matching the selector
     const observer = new MutationObserver((mutations, obs) => {
-      const el = document.querySelector<T>(selector);
-      if (el) {
-        resolve(el);
+      const newElement = getLatestElement();
+      if (newElement) {
+        resolve(newElement);
         obs.disconnect();
       }
     });
 
+    // Start observing the document body for added nodes
     observer.observe(document.body, {
       childList: true,
       subtree: true,
     });
+  });
+}
+function ListenForNewElements(callback: () => void) {
+  // Create a MutationObserver to watch for new elements matching the selector
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (
+          node instanceof HTMLElement &&
+          node?.classList?.contains("hidden")
+        ) {
+          callback();
+        }
+      }
+    }
+  });
+
+  // Start observing the document body for added nodes
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
   });
 }
 
@@ -43,7 +70,6 @@ async function askChatGPT(prompt: string) {
   );
   console.log(textarea);
   if (textarea) {
-    textarea.focus();
     textarea.innerHTML = "";
     textarea.textContent = prompt;
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
@@ -57,41 +83,27 @@ async function askChatGPT(prompt: string) {
   ) as HTMLButtonElement;
   if (sendButton) {
     console.log("click send button");
-    sendButton.focus();
-    sendButton.click();
+
+    sendButton.dispatchEvent(
+      new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+      })
+    );
   }
 
-  // Wait for the response
-  await waitForResponse();
+  ListenForNewElements(async () => {
+    const responseElement = await waitForElement<HTMLElement>(".language-json");
+    console.log("responseElement", responseElement);
+    if (responseElement) {
+      const response = responseElement.innerText;
+      console.log("response", response);
 
-  // Extract and send the response back to the extension
-  const responseElement = document.querySelector(
-    ".language-json"
-  ) as HTMLElement;
-  if (responseElement) {
-    const response = responseElement.innerText;
-    console.log("response", response);
-
-    return response;
-  }
-}
-
-function waitForResponse(): Promise<void> {
-  return new Promise((resolve) => {
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-          const addedNode = mutation.addedNodes[0] as HTMLElement;
-          if (addedNode.classList.contains("markdown")) {
-            observer.disconnect();
-            resolve();
-            return;
-          }
-        }
+      if (response) {
+        chrome.storage.local.set({ improveEnglish: response });
       }
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
+    }
   });
 }
 
