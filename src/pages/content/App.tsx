@@ -18,6 +18,8 @@ export type ImprovedTextResposne = {
 };
 
 const App = () => {
+  console.log("App");
+
   const {
     isOpen,
     selectedText,
@@ -43,9 +45,22 @@ const App = () => {
 
   useEffect(() => {
     const updateConstraints = () => {
-      const cardElement = document.querySelector(".card");
+      console.log("updateConstraints");
+      console.log({ isOpen });
+      const shadowHost = document.querySelector(".better-english");
+      if (!shadowHost || !shadowHost.shadowRoot) return;
+      const shadowRoot = shadowHost.shadowRoot;
+      const cardElement = shadowRoot.querySelector(".card");
+      console.log({ shadowRoot, cardElement });
+
       if (cardElement) {
         const rect = cardElement.getBoundingClientRect();
+        console.log({
+          left: -rect.left,
+          right: window.innerWidth - rect.right,
+          top: -rect.top,
+          bottom: window.innerHeight - rect.bottom,
+        });
         setConstraints({
           left: -rect.left,
           right: window.innerWidth - rect.right,
@@ -114,7 +129,10 @@ const App = () => {
 
   return (
     <>
-      <button onClick={() => setIsOpen((open) => !open)}>
+      <button
+        onClick={() => setIsOpen((open) => !open)}
+        style={{ top: 0, left: 0, position: "fixed", zIndex: 1000000 }}
+      >
         OPEN BETTER ENGLISH
       </button>
       {isOpen && (

@@ -1,13 +1,12 @@
-import { createRoot } from "react-dom/client";
-import App from "./App";
-import "./style.css";
-const div = document.createElement("div");
-div.id = "__root";
-document.body.appendChild(div);
+import React from "react";
+import styles from "./style.css?inline";
+import createShadowRoot from "./CreateShadowRoot";
 
-const rootContainer = document.querySelector("#__root");
-if (!rootContainer) throw new Error("Can't find Content root element");
-const root = createRoot(rootContainer);
+import App from "./App";
+
+const root = createShadowRoot(styles);
+if (!root) throw new Error("Can't find Content root element");
+
 root.render(<App />);
 
 try {
