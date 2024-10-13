@@ -95,8 +95,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         return;
       }
 
-      const JSONresponse = JSON.parse(response);
-      console.log("JSONresponse", JSONresponse);
+      console.log("JSONresponse", JSON.parse(response));
       chrome.tabs.sendMessage(tab.id, {
         action: "improveEnglish",
         data: response,
