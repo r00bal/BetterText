@@ -154,7 +154,7 @@ const App = () => {
                 </svg>
               </button>
             </div>
-            <div className="card-body rounded-sm z-[100003] p-4 mt-10">
+            <div className="card-body rounded-sm z-[100003] p-4 mt-10 bg-white">
               <div>
                 <Collapse title="ORGINAL">
                   <div
@@ -181,7 +181,7 @@ const App = () => {
                 </Collapse>
                 <Collapse title="CHANGES">
                   <Loader isLoading={isLoading} />
-                  <div className="card-body p-2 rounded-sm">
+                  <div className="card-body p-2 rounded-sm bg-white">
                     <div className="rounded-md text-xs bg-zinc-50 p-4 border border-zinc-300 border-solid font-normal text-neutral-700 dark:text-neutral-200 leading-6">
                       {differenceArray.map((text) => {
                         return text.diff ? (

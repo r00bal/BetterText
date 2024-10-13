@@ -90,7 +90,7 @@ export const useBackgroundComunication = () => {
   };
 };
 
-const fakeData = () => {
+export const fakeData = () => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(JSON.stringify(dummyResponse));

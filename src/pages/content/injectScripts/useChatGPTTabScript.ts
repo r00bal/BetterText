@@ -4,13 +4,13 @@ console.log("useChatGPTTabScript");
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("request", request);
   if (request.action === "askChatGPT") {
-    console.log("askChatGPT(request.prompt);");
     askChatGPT(request.prompt).then((response) => {
       sendResponse(response);
     });
     return true;
   }
 });
+
 async function waitForElement<T extends Element>(selector: string): Promise<T> {
   return new Promise((resolve) => {
     const element = document.querySelector<T>(selector);

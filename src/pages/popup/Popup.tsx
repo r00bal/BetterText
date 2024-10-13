@@ -6,42 +6,9 @@ function Popup() {
   const [mode, setMode] = useState<Mode>("free");
   const [inputValue, setInputValue] = useState<string>("");
 
-  const openChatGPT = () => {
-    chrome.tabs.query(
-      { url: ["https://chatgpt.com/*", "https://www.chatgpt.com/*"] },
-      (tabs) => {
-        console.log("tabs", tabs);
-        if (tabs.length === 0) {
-          chrome.tabs.create({ url: "https://chatgpt.com" }, (newTab) => {
-            if (newTab.id) {
-              chrome.storage.sync.set({ chatGPTTabId: newTab.id });
-              chrome.scripting.executeScript({
-                target: { tabId: newTab.id },
-                files: [
-                  "src/pages/content/injectScripts/useChatGPTTabScript.ts",
-                ],
-              });
-            }
-          });
-        } else {
-          const tabId = tabs[0].id;
-          if (tabId) {
-            console.log("tabId", tabIds);
-            chrome.storage.sync.set({ chatGPTTabId: tabId });
-            chrome.scripting.executeScript({
-              target: { tabId: tabId },
-              files: ["src/pages/content/injectScripts/useChatGPTTabScript.ts"],
-            });
-          }
-        }
-      }
-    );
-  };
-
   const handleSubmit = () => {
     switch (mode) {
       case "free":
-        openChatGPT();
         break;
       case "ollama":
         chrome.storage.sync.set({ ollamaUrl: inputValue });

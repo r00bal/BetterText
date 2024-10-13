@@ -1,36 +1,6 @@
-import { StorageSync } from "../popup/Popup";
-
 console.log("background script loaded");
-import dummyResponse from "./response.json";
 
-// TODO: getAuthToken is not used yet, need to figure how to implement it
-// function getAuthToken(interactive) {
-//   chrome.identity.getAuthToken({ interactive: interactive }, function (token) {
-//     if (chrome.runtime.lastError) {
-//       console.error(chrome.runtime.lastError);
-//       return;
-//     }
-//     console.log("Access Token acquired: " + token);
-
-//     // Use the access token directly
-//     fetch("http://localhost:3000/api/openai", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: "Bearer " + token,
-//       },
-//     })
-//       .then((response) => response.json())
-//       .then((data) => {
-//         console.log("data", data);
-//       })
-//       .catch((error) => {
-//         console.error("Error:", error);
-//       });
-//   });
-// }
-
-// getAuthToken(true);
+import { getStorageValue } from "./utils";
 
 const generateCodeSuggestionFromOllama = async (prompt: string) => {
   const apiUrl = `http://localhost:11434/api/generate`;
@@ -55,10 +25,14 @@ const generateCodeSuggestionFromOllama = async (prompt: string) => {
     }
 
     const jsonData = await response.json();
+    console.log({ jsonData });
+
     if (!jsonData || Object.keys(jsonData).length === 0) {
       throw new Error("Empty or invalid response from server");
     }
     const responseText = jsonData?.response;
+    console.log({ responseText });
+
     if (!responseText) {
       throw new Error('No valid "response" field in server\'s JSON');
     }
@@ -66,6 +40,11 @@ const generateCodeSuggestionFromOllama = async (prompt: string) => {
   } catch (error) {
     console.error("Error:", error);
   }
+};
+
+const createPromptSimple = (text: string) => {
+  return `You are an English text corrector. Respond in JSON format with two properties: "improved" and "explanation".
+  In "improved", correct the English text using a simple, friendly style. Stick as closely as possible to the original text. Only make changes when absolutely necessary, and ensure the result sounds natural and human. Here is the text you should improve: "${text}".`;
 };
 
 const createPrompt = (text: string) => {
@@ -91,6 +70,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   console.log("contextMenus.onClicked", info, tab);
   if (info.menuItemId === "improveEnglish" && tab?.id) {
     const selection = info.selectionText;
+    console.log({ selection });
 
     chrome.tabs.sendMessage(tab.id, {
       action: "openDrawer",
@@ -102,6 +82,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     });
 
     const mode = await getStorageValue("mode");
+    console.log({ mode });
 
     if (mode === "ollama") {
       const text = selection;
@@ -113,217 +94,23 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         console.error("No response from AI model");
         return;
       }
-      // const JSONresponse = JSON.parse(response);
-      const JSONresponse = response.json();
+
+      const JSONresponse = JSON.parse(response);
       console.log("JSONresponse", JSONresponse);
       chrome.tabs.sendMessage(tab.id, {
         action: "improveEnglish",
         data: response,
       });
     }
-
-    if (mode === "free") {
-      const text = selection;
-      let chatGPTTabId = (await getStorageValue("chatGPTTabId")) || null;
-      console.log("chatGPTTabId", chatGPTTabId);
-
-      const openedChatGPTTabs = await queryTabs({
-        url: ["https://chatgpt.com/*", "https://www.chatgpt.com/*"],
-      });
-
-      if (
-        !chatGPTTabId ||
-        openedChatGPTTabs.length === 0 ||
-        !openedChatGPTTabs.some((tab) => tab.id === chatGPTTabId)
-      ) {
-        chatGPTTabId = await openChatGPTTab();
-        console.log("await openChatGPTTab()", chatGPTTabId);
-
-        if (chatGPTTabId) {
-          await setStorageSync({ chatGPTTabId });
-        } else {
-          console.error("Unable to open ChatGPT tab.");
-          return;
-        }
-      }
-
-      console.log("free mode", chatGPTTabId);
-
-      try {
-        const response = await sendMessagePromise<{
-          correctedText: string;
-          mistakes: Array<{
-            original: string;
-            corrected: string;
-            explanation: string;
-          }>;
-        }>(chatGPTTabId, {
-          action: "askChatGPT",
-          prompt: `correct english, simply friendly style, response in JSON string format: { correctedText: ... ,mistakes: [{original: ...., corrected: ...., explanation: ... } ]}: ${text}`,
-        });
-
-        console.log("Response from Content Script:", response);
-
-        // Handle the response as needed
-        chrome.tabs.sendMessage(tab.id, {
-          action: "improveEnglish",
-          data: response,
-        });
-      } catch (error) {
-        console.error("Error communicating with content script:", error);
-      }
-    }
   }
 });
 
-// Function to open a new ChatGPT tab using async/await
-const openChatGPTTab = async (): Promise<number | null> => {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.create({ url: "https://chatgpt.com" }, (newTab) => {
-      if (chrome.runtime.lastError || !newTab.id) {
-        console.error("Error creating new tab:", chrome.runtime.lastError);
-        return reject(chrome.runtime.lastError);
-      }
-
-      const tabId = newTab.id;
-      console.log(`ChatGPT tab created with ID: ${tabId}`);
-
-      // Listener for tab updates to check when it's fully loaded
-      const onUpdateListener = (
-        updatedTabId: number,
-        changeInfo: chrome.tabs.TabChangeInfo,
-        tab: chrome.tabs.Tab
-      ) => {
-        if (updatedTabId === tabId && changeInfo.status === "complete") {
-          console.log("ChatGPT tab fully loaded.");
-          chrome.tabs.onUpdated.removeListener(onUpdateListener);
-          // Now wait for the content script to signal readiness
-        }
-      };
-
-      chrome.tabs.onUpdated.addListener(onUpdateListener);
-
-      // Listener for messages from content scripts
-      const onMessageListener = (
-        message: any,
-        sender: chrome.runtime.MessageSender,
-        sendResponse: Function
-      ) => {
-        if (sender.tab?.id === tabId && message === "contentScriptReady") {
-          console.log(
-            "Received contentScriptReady message from content script."
-          );
-          chrome.runtime.onMessage.removeListener(onMessageListener);
-          resolve(tabId);
-        }
-      };
-
-      chrome.runtime.onMessage.addListener(onMessageListener);
-
-      // Optional: Implement a timeout to avoid waiting indefinitely
-      const timeout = setTimeout(() => {
-        console.error(
-          "Timeout waiting for content script to send readiness signal."
-        );
-        chrome.runtime.onMessage.removeListener(onMessageListener);
-        reject(new Error("Content script readiness timeout."));
-      }, 30000); // 30 seconds timeout
-
-      // Clear the timeout if the promise resolves or rejects
-      const originalResolve = resolve;
-      resolve = (value) => {
-        clearTimeout(timeout);
-        originalResolve(value);
-      };
-      const originalReject = reject;
-      reject = (reason) => {
-        clearTimeout(timeout);
-        originalReject(reason);
-      };
-    });
-  });
-};
-
-const getStorageValue = async <T extends keyof StorageSync>(
-  key: T
-): Promise<StorageSync[T]> => {
-  return new Promise((resolve) => {
-    chrome.storage.sync.get(key, (result) => {
-      resolve(result[key] as StorageSync[T]);
-    });
-  });
-};
-
-export const fakeData = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(dummyResponse);
-    }, 2000);
-  });
-};
-
-// Wrap chrome.storage.sync.set in a Promise
-const setStorageSync = (data: { [key: string]: any }): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    chrome.storage.sync.set(data, () => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve();
-      }
-    });
-  });
-};
-
-// Wrap chrome.tabs.query in a Promise
-const queryTabs = (
-  queryInfo: chrome.tabs.QueryInfo
-): Promise<chrome.tabs.Tab[]> => {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.query(queryInfo, (tabs) => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(tabs);
-      }
-    });
-  });
-};
-
-const updateChatGPTTabId = async () => {
-  try {
-    const tabs = await queryTabs({
-      url: ["https://chatgpt.com/*", "https://www.chatgpt.com/*"],
-    });
-
-    if (tabs.length === 0) {
-      await setStorageSync({ chatGPTTabId: null });
-    } else {
-      await setStorageSync({ chatGPTTabId: tabs[0].id });
-    }
-  } catch (error) {
-    console.error("Error querying tabs:", error);
-  }
-};
-
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === "complete") {
-    updateChatGPTTabId();
+chrome.storage.onChanged.addListener((changes, area) => {
+  console.log("🔄 Storage changes detected:");
+  console.log("📂 Area:", area);
+  for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
+    console.log(`🔑 Property: ${key}`);
+    console.log(`   Old value:`, oldValue);
+    console.log(`   New value:`, newValue);
   }
 });
-
-// src/utils/sendMessagePromise.ts
-export const sendMessagePromise = <T>(
-  tabId: number,
-  message: any
-): Promise<T> => {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.sendMessage(tabId, message, (response) => {
-      if (chrome.runtime.lastError) {
-        reject(new Error(chrome.runtime.lastError.message));
-      } else {
-        resolve(response as T);
-      }
-    });
-  });
-};
