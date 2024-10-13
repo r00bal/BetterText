@@ -172,7 +172,7 @@ const App = () => {
                 </svg>
               </button>
             </div>
-            <div className="card-body rounded-sm z-[100003] p-4 mt-10">
+            <div className="card-body rounded-b-2xl z-[100003] p-4 mt-10 bg-white">
               <div>
                 <Collapse title="ORGINAL">
                   <div
