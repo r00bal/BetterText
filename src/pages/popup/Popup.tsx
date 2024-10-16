@@ -3,13 +3,11 @@ import logo from "@assets/img/logo.svg";
 import { ModeInput } from "./ModeInput";
 
 function Popup() {
-  const [mode, setMode] = useState<Mode>("free");
+  const [mode, setMode] = useState<Mode>("ollama");
   const [inputValue, setInputValue] = useState<string>("");
 
   const handleSubmit = () => {
     switch (mode) {
-      case "free":
-        break;
       case "ollama":
         chrome.storage.sync.set({ ollamaUrl: inputValue });
         break;
@@ -24,7 +22,7 @@ function Popup() {
   };
 
   useEffect(() => {
-    chrome.storage.sync.get(storageOptions, (result: StorageSync) => {
+    chrome.storage.sync.get(storageOptions, (result) => {
       if (result.mode) setMode(result.mode as Mode);
       if (result.ollamaUrl && result.mode === "ollama")
         setInputValue(result.ollamaUrl);
@@ -52,9 +50,8 @@ function Popup() {
                 onChange={() => handleModeChange(option)}
               />
               <span className="label-text ml-2">
-                {option === "free" && "Free with ChatGPT"}
                 {option === "ollama" && "Ollama Local"}
-                {option === "api" && "Use API Key"}
+                {option === "api" && "Use OpeanAI API Key"}
                 {option === "full" && "Full Access"}
               </span>
             </label>
@@ -73,22 +70,11 @@ function Popup() {
 
 export default Popup;
 
-export const storageOptions = [
-  "mode",
-  "ollamaUrl",
-  "apiKey",
-  "chatGPTTabId",
-] as const;
+export const storageOptions = ["mode", "ollamaUrl", "apiKey"] as const;
 export type StorageOptions = (typeof storageOptions)[number];
 
 export type StorageSync = {
-  [K in StorageOptions]: K extends "mode"
-    ? Mode
-    : K extends "chatGPTTabId"
-    ? number
-    : K extends "fullAccess"
-    ? boolean
-    : string;
+  [K in StorageOptions]: K extends "mode" ? Mode : string;
 };
 
 export const options = ["ollama", "api", "full"] as const;
