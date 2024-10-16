@@ -73,19 +73,23 @@ function Popup() {
 
 export default Popup;
 
-export type Mode = "free" | "ollama" | "api" | "full";
-
-export type StorageSync = {
-  mode?: Mode;
-  ollamaUrl?: string;
-  apiKey?: string;
-  chatGPTTabId?: number;
-};
-export type StorageOptions = "mode" | "ollamaUrl" | "apiKey" | "chatGPTTabId";
-export const storageOptions: StorageOptions[] = [
+export const storageOptions = [
   "mode",
   "ollamaUrl",
   "apiKey",
   "chatGPTTabId",
-];
-export const options: Mode[] = ["free", "ollama", "api", "full"];
+] as const;
+export type StorageOptions = (typeof storageOptions)[number];
+
+export type StorageSync = {
+  [K in StorageOptions]: K extends "mode"
+    ? Mode
+    : K extends "chatGPTTabId"
+    ? number
+    : K extends "fullAccess"
+    ? boolean
+    : string;
+};
+
+export const options = ["ollama", "api", "full"] as const;
+export type Mode = (typeof options)[number];
