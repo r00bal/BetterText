@@ -1,4 +1,5 @@
 import { StorageSync } from "../popup/Popup";
+import { OLLAMA_API_URL } from "./const";
 import dummyResponse from "./response.json";
 
 export const fakeData = () => {
@@ -10,7 +11,9 @@ export const fakeData = () => {
 };
 
 // Wrap chrome.storage.sync.set in a Promise
-export const setStorageSync = (data: { [key: string]: any }): Promise<void> => {
+export const setStorageSync = (data: {
+  [key: string]: unknown;
+}): Promise<void> => {
   return new Promise((resolve, reject) => {
     chrome.storage.sync.set(data, () => {
       if (chrome.runtime.lastError) {
@@ -83,9 +86,44 @@ export const generateCodeSuggestionFromOllama = async (
   }
 };
 
+export const generateCodeSuggestionFromOpenAI = async (
+  prompt: string,
+  apiUrl = OPENAI_API_URL
+) => {
+  const body = {
+    model: "gpt-4o",
+    prompt: prompt,
+    format: "json",
+    stream: false,
+  };
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    const jsonData = await response.json();
+    if (!jsonData || Object.keys(jsonData).length === 0) {
+      throw new Error("Empty or invalid response from server");
+    }
+    const responseText = jsonData?.choices?.[0]?.message?.content;
+    if (!responseText) {
+      throw new Error('No valid "response" field in server\'s JSON');
+    }
+    return responseText;
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+
 export const createPromptForOpenAI = (text: string) => {
-  return `You are an English text corrector. Respond in JSON format with two properties: "improved" and "explanation".
-  In "improved", correct the English text using a simple, friendly style. Stick as closely as possible to the original text. Only make changes when absolutely necessary, and ensure the result sounds natural and human. Here is the text you should improve: "${text}".`;
+  return `correct english, simply friendly style, response in JSONstring format: "{ improved: ... ,explanation: [{original: ...., correction: ...., explanation: ... } ]}" :  "${text}".`;
 };
 
 export const createPromptForOllama = (text: string) => {
@@ -96,4 +134,11 @@ export const createPromptForOllama = (text: string) => {
   "correction": The corrected version.
   "explanation": A short, friendly explanation of what was wrong and why it was changed.
   Avoid using technical grammar terms. You can mention which rule was broken, but keep explanations simple and essential. Example: [{"original": "example mistake", "correction": "corrected example", "explanation": "Explanation of the correction"}].`;
+};
+
+export const sendCorrectedText = (tabId: number, text: string) => {
+  chrome.tabs.sendMessage(tabId, {
+    action: "improveEnglish",
+    data: text,
+  });
 };

@@ -6,19 +6,20 @@ function Popup() {
   const [mode, setMode] = useState<Mode>("ollama");
   const [inputValue, setInputValue] = useState<string>("");
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     switch (mode) {
       case "ollama":
-        chrome.storage.sync.set({ ollamaUrl: inputValue });
+        await chrome.storage.sync.set({ ollamaUrl: inputValue });
         break;
       case "api":
-        chrome.storage.sync.set({ apiKey: inputValue });
+        console.log(mode, inputValue);
+        await chrome.storage.sync.set({ apiKey: inputValue });
         break;
       case "full":
-        chrome.storage.sync.set({ fullAccess: true });
+        await chrome.storage.sync.set({ fullAccess: true });
         break;
     }
-    chrome.storage.sync.set({ mode: mode });
+    await chrome.storage.sync.set({ mode: mode });
   };
 
   useEffect(() => {
